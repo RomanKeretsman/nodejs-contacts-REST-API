@@ -2,25 +2,35 @@ const express = require('express')
 const router = express.Router()
 
 const {
-  getContacts,
-  getContactsById,
-  addContacts,
-  deleteContact,
-  patchContact,
-} = require('../../controllers/contactsController') // Импорт контроллеров маршрутов
+  getContactsController,
+  getContactByIdController,
+  addContactsController,
+  updateContactController,
+  updateContactStatusController,
+  deleteContactController,
+} = require('../../controllers/contactsController') // Подключениу контроллеров маршрутов
 
 const {
   addContactValidation,
-  patchContactValidation,
-} = require('../../middlewares/validation') // Импорт валидации
+  updateContactValidation,
+  updateContactStatusValidation,
+  idValidation,
+} = require('../../middlewares/validation') // Подключение валидации
 
-router.get('/', getContacts) // Роут для списка всех контактов
-router.get('/:contactId', getContactsById) // Роут для контакта по id
+const { asyncWrapper } = require('../../helpers/asyncWrapper') // Подключение мидлвары универсального обработчика try catch
 
-router.post('/', addContactValidation, addContacts) // Роут для создания контакта
+// GET запросы
+router.get('/', asyncWrapper(getContactsController)) // Роут для получения списка всех контактов
+router.get('/:contactId', idValidation, asyncWrapper(getContactByIdController)) // Роут для получения контакта по id
 
-router.patch('/:contactId', patchContactValidation, patchContact) // Роут для обновления контакта
+// POST запросы
+router.post('/', addContactValidation, asyncWrapper(addContactsController)) // Роут для создания контакта
 
-router.delete('/:contactId', deleteContact) // Роут для удаления контакта
+// PATCH запросы
+router.patch('/:contactId', idValidation, updateContactValidation, asyncWrapper(updateContactController)) // Роут для обновления контакта по id
+router.patch('/:contactId/favorite', idValidation, updateContactStatusValidation, asyncWrapper(updateContactStatusController)) // Роут для обновления статуса
+
+// DELETE запросы
+router.delete('/:contactId', idValidation, asyncWrapper(deleteContactController)) // Роут для удаления контакта
 
 module.exports = router
