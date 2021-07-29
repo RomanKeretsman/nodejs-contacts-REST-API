@@ -4,7 +4,7 @@ const router = express.Router()
 const {
   getContactsController,
   getContactByIdController,
-  addContactsController,
+  addContactController,
   updateContactController,
   updateContactStatusController,
   deleteContactController,
@@ -15,20 +15,23 @@ const {
   updateContactValidation,
   updateContactStatusValidation,
   idValidation,
-} = require('../../middlewares/validation') // Подключение валидации
+} = require('../../middlewares/contactValidation') // Подключение валидации
 
 const { asyncWrapper } = require('../../helpers/asyncWrapper') // Подключение мидлвары универсального обработчика try catch
+const { protect } = require('../../middlewares/protect') // Мидлвар протекции роутов
+
+router.use(protect)
 
 // GET запросы
 router.get('/', asyncWrapper(getContactsController)) // Роут для получения списка всех контактов
 router.get('/:contactId', idValidation, asyncWrapper(getContactByIdController)) // Роут для получения контакта по id
 
 // POST запросы
-router.post('/', addContactValidation, asyncWrapper(addContactsController)) // Роут для создания контакта
+router.post('/', addContactValidation, asyncWrapper(addContactController)) // Роут для создания контакта
 
 // PATCH запросы
-router.patch('/:contactId', idValidation, updateContactValidation, asyncWrapper(updateContactController)) // Роут для обновления контакта по id
-router.patch('/:contactId/favorite', idValidation, updateContactStatusValidation, asyncWrapper(updateContactStatusController)) // Роут для обновления статуса
+router.patch('/:contactId', [idValidation, updateContactValidation], asyncWrapper(updateContactController)) // Роут для обновления контакта по id
+router.patch('/:contactId/favorite', [idValidation, updateContactStatusValidation], asyncWrapper(updateContactStatusController)) // Роут для обновления статуса
 
 // DELETE запросы
 router.delete('/:contactId', idValidation, asyncWrapper(deleteContactController)) // Роут для удаления контакта
